@@ -16,26 +16,39 @@ namespace CrashCourse2021ExercisesDayThree.Services
         //Create and return a Customer Object with all incoming properties (no ID)
         internal Customer Create(string firstName, string lastName, DateTime birthDate)
         {
-            throw new NotImplementedException();
+            Customer customer = new Customer();
+            if(firstName.Length<2)
+            throw new ArgumentException(Constants.FirstNameException);
+            customer.FirstName=firstName;
+            customer.LastName=lastName;
+            customer.BirthDate=birthDate;
+            return customer;
         }
+
+        CustomerTable customerTable = new CustomerTable();
 
         //db has an Add function to add a new customer!! :D
         //We can reuse the Create function above..
         internal Customer CreateAndAdd(string firstName, string lastName, DateTime birthDate)
         {
-            throw new NotImplementedException();
+            return customerTable.AddCustomer(Create(firstName,lastName,birthDate));
         }
 
         //Simple enough, Get the customers from the "Database" (db)
         internal List<Customer> GetCustomers()
         {
-            throw new NotImplementedException();
+            return customerTable.GetCustomers();
         }
 
         //Maybe Check out how to find in a LIST in c# Maybe there is a Find function?
         public Customer FindCustomer(int customerId)
         {
-            throw new NotImplementedException();
+            if(customerId<0)
+            throw new System.IO.InvalidDataException(Constants.CustomerIdMustBeAboveZero);
+            List<Customer> customers = GetCustomers();
+            return customers.Find(c=>c.Id==customerId);
+
+
         }
         
         /*So many things can go wrong here...
@@ -49,7 +62,33 @@ namespace CrashCourse2021ExercisesDayThree.Services
         */
         public List<Customer> SearchCustomer(string searchField, string searchValue)
         {
-            throw new NotImplementedException();
+            if(searchField==null)
+            throw new System.IO.InvalidDataException(Constants.CustomerSearchFieldCannotBeNull);
+
+            if(searchField.Trim()=="")
+            throw new System.IO.InvalidDataException(Constants.CustomerSearchValueCannotBeNull);
+
+            if(searchValue==null)
+            throw new ArgumentException(Constants.CustomerSearchValueCannotBeNull);
+
+            List<Customer> customers = GetCustomers();
+            searchField = searchField.ToLower();
+            switch(searchField){
+                case "firstname" : 
+                    return customers.FindAll(c=>c.FirstName.ToLower().Contains(searchValue.ToLower()));
+                case "lastname" :
+                    return customers.FindAll(c=>c.LastName.ToLower().Contains(searchValue.ToLower()));
+                case "id" :
+                    int value;
+                    if(!int.TryParse(searchValue,out value))
+                    throw new System.IO.InvalidDataException(Constants.CustomerSearchValueWithFieldTypeIdMustBeANumber);
+                    if(value<=0)
+                    throw new System.IO.InvalidDataException(Constants.CustomerIdMustBeAboveZero);
+                    return customers.FindAll(c=>c.Id==value);    
+                default:
+                    throw new System.IO.InvalidDataException(Constants.CustomerSearchFieldNotFound);
+            }
+
         }
     }
 }
